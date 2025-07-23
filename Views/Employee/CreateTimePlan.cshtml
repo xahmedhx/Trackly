@@ -1,0 +1,172 @@
+@model Trackly.Models.TimePlanViewModel
+@{
+    ViewData["Title"] = "Create Time Plan";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3>Create Time Plan</h3>
+            @if (ViewBag.EmployeeName != null)
+            {
+                <p class="text-muted mb-0">For: @ViewBag.EmployeeName</p>
+            }
+        </div>
+        <a asp-action="MyTimePlans" class="btn btn-outline-primary">
+            <i class="fas fa-list"></i> My Time Plans
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-action="CreateTimePlan" asp-controller="Employee" method="post">
+        <input type="hidden" asp-for="EmployeeId" />
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <label asp-for="Title" class="form-label">Time Plan Title</label>
+                <input asp-for="Title" class="form-control" placeholder="Enter a descriptive title" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Total Tasks</label>
+                <input type="text" id="task-count" class="form-control" readonly value="1" />
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Tasks</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Task Name</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-rows">
+                            <tr>
+                                <td><input name="Items[0].TaskName" class="form-control" placeholder="Enter task name" required /></td>
+                                <td><input type="date" name="Items[0].StartDate" class="form-control" required /></td>
+                                <td><input type="date" name="Items[0].EndDate" class="form-control" required /></td>
+                                <td>
+                                    <select name="Items[0].Status" class="form-select">
+                                        <option value="Pending">Pending</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Done">Done</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-row">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" id="add-row">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Time Plan
+                    </button>
+                    <a asp-action="MyTimePlans" class="btn btn-secondary ms-2">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let rowIdx = 1;
+
+        function updateTaskCount() {
+            const rowCount = document.querySelectorAll('#task-rows tr').length;
+            document.getElementById('task-count').value = rowCount;
+        }
+
+        function updateRowIndices() {
+            const rows = document.querySelectorAll('#task-rows tr');
+            rows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name) {
+                        const newName = name.replace(/Items\[\d+\]/, `Items[${index}]`);
+                        input.setAttribute('name', newName);
+                    }
+                });
+            });
+            rowIdx = rows.length;
+            updateTaskCount();
+        }
+
+        document.getElementById('add-row').addEventListener('click', function () {
+            const tbody = document.getElementById('task-rows');
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td><input name="Items[${rowIdx}].TaskName" class="form-control" placeholder="Enter task name" required /></td>
+                <td><input type="date" name="Items[${rowIdx}].StartDate" class="form-control" required /></td>
+                <td><input type="date" name="Items[${rowIdx}].EndDate" class="form-control" required /></td>
+                <td>
+                    <select name="Items[${rowIdx}].Status" class="form-select">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-row">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+            rowIdx++;
+            updateTaskCount();
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target && (e.target.classList.contains('remove-row') || e.target.closest('.remove-row'))) {
+                const rows = document.querySelectorAll('#task-rows tr');
+                if (rows.length > 1) {
+                    e.target.closest('tr').remove();
+                    updateRowIndices();
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTaskCount();
+        });
+    </script>
+}

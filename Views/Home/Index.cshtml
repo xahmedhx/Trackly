@@ -1,0 +1,99 @@
+@{
+    ViewData["Title"] = "Home";
+    var isMainAdmin = User?.Identity?.IsAuthenticated == true && User.IsInRole("MainAdmin");
+    var isAdmin = User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+}
+
+<div class="container mt-4">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (isMainAdmin)
+    {
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Create Admin</h5>
+                        <form action="/api/mainadmin/CreateAdmin" method="post">
+                            <div class="form-group mb-3">
+                                <input name="Username" placeholder="New Admin Username" class="form-control" />
+                            </div>
+                            <div class="form-group mb-3">
+                                <input name="Password" type="password" placeholder="Password" class="form-control" />
+                            </div>
+                            <div class="form-group mb-3">
+                                <select name="DepartmentId" class="form-control">
+                                    <option selected disabled>Select Department</option>
+                                    @foreach (var dept in ViewBag.Departments)
+                                    {
+                                        <option value="@dept.Id">@dept.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-secondary">Create Admin</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Create Employee</h5>
+                        <form action="/api/mainadmin/CreateEmployee" method="post">
+                            <div class="form-group mb-3">
+                                <input name="Username" placeholder="Username" class="form-control" />
+                            </div>
+                            <div class="form-group mb-3">
+                                <select name="DepartmentId" class="form-control">
+                                    <option selected disabled>Select Department</option>
+                                    @foreach (var dept in ViewBag.Departments)
+                                    {
+                                        <option value="@dept.Id">@dept.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Employee</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (isAdmin)
+    {
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Admin Panel</h5>
+                <p class="card-text">View timeplans of employees in your department.</p>
+                <form asp-controller="Admin" asp-action="EmployeeTimePlans" method="get">
+                    <div class="form-group mb-3">
+                        <label for="employeeId" class="form-label">Select Employee</label>
+                        <select name="employeeId" id="employeeId" class="form-control" required>
+                            <option value="">-- Select Employee --</option>
+                            @foreach (var emp in ViewBag.Employee> as List<Trackly.Models.Employee>)
+                            {
+                                <option value="@emp.Id">@emp.Username</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info">View Timeplans</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>

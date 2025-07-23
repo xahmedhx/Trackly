@@ -1,0 +1,39 @@
+@model Trackly.Models.Timeplan
+@{
+    ViewData["Title"] = "Time Plan Details";
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<h3>Time Plan: @Model.Title</h3>
+<p>Created on: @Model.CreatedDate.ToShortDateString()</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Task</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.TaskName</td>
+                <td>@item.StartDate.ToShortDateString()</td>
+                <td>@item.EndDate.ToShortDateString()</td>
+                <td>@item.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!isAdmin)
+{
+    <a asp-action="EditTimePlan" asp-route-id="@Model.Id" class="btn btn-warning">
+        <i class="fas fa-edit"></i> Edit
+    </a>
+
+    <a asp-action="MyTimePlans" class="btn btn-secondary ms-2">Back</a>
+}

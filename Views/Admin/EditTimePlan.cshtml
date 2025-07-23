@@ -1,0 +1,86 @@
+@model Trackly.Models.Timeplan
+@{
+    ViewData["Title"] = "Edit Time Plan";
+}
+
+<h3>Edit Time Plan</h3>
+
+<form asp-action="EditTimePlan" asp-route-id="@Model.Id" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">Time Plan Title</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CreatedDate" class="form-label">Created Date</label>
+        <input asp-for="CreatedDate" type="date" class="form-control" />
+        <span asp-validation-for="CreatedDate" class="text-danger"></span>
+    </div>
+
+    <h5>Tasks</h5>
+    <div id="taskList">
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+            <div class="border p-3 mb-3 rounded bg-light">
+                <input type="hidden" name="Items[@i].Id" value="@Model.Items[i].Id" />
+
+                <div class="mb-2">
+                    <label>Task Name</label>
+                    <input type="text" name="Items[@i].TaskName" class="form-control" value="@Model.Items[i].TaskName" />
+                </div>
+
+                <div class="mb-2">
+                    <label>Start Date</label>
+                    <input type="date" name="Items[@i].StartDate" class="form-control" value="@Model.Items[i].StartDate.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="mb-2">
+                    <label>End Date</label>
+                    <input type="date" name="Items[@i].EndDate" class="form-control" value="@Model.Items[i].EndDate.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="mb-2">
+                    <label>Status</label>
+                    <select name="Items[@i].Status" class="form-select">
+                        <option value="Pending" selected="@(Model.Items[i].Status == "Pending")">Pending</option>
+                        <option value="InProgress" selected="@(Model.Items[i].Status == "InProgress")">In Progress</option>
+                        <option value="Completed" selected="@(Model.Items[i].Status == "Completed")">Completed</option>
+                    </select>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Trigger Button -->
+    <div class="text-end">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmModal">
+            Save
+        </button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirm Save</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to save changes to this time plan and its tasks?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Yes, Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+}

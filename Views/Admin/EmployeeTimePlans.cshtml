@@ -1,0 +1,38 @@
+@model List<Trackly.Models.Timeplan>
+
+@{
+    ViewData["Title"] = "Employee Time Plans";
+}
+
+<select name="EmployeeId" class="form-control">
+                                    <option selected disabled>Select Employee</option>
+                                    @foreach (var e in ViewBag.Employees as List<Trackly.Models.Employee>)
+                                    {
+                                        <option value="@e.Id">@e.Username</option>
+                                    }
+                                </select>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Created Date</th>
+            <th>Tasks</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var plan in Model)
+        {
+            <tr>
+                <td>@plan.Title</td>
+                <td>@plan.CreatedDate.ToShortDateString()</td>
+                <td>@(plan.Items?.Count ?? 0)</td>
+                <td>
+                    <a asp-controller="Employee" asp-action="TimePlanDetails" asp-route-id="@plan.Id" class="btn btn-sm btn-primary">View</a>
+                    <a asp-controller="Admin" asp-action="EditTimePlan" asp-route-id="@plan.Id" class="btn btn-sm btn-warning ms-2">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

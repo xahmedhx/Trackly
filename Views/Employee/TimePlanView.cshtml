@@ -1,0 +1,119 @@
+@model List<Trackly.Models.Timeplan>
+@{
+    ViewData["Title"] = "My Time Plans";
+}
+
+<div class="container mt-4 fade-in-up">
+    <!-- Header -->
+    <div class="section shadow-sm mb-4" style="border-radius: 20px; padding: 30px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); border: 1px solid rgba(102, 126, 234, 0.1);">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-2" style="background: linear-gradient(45deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 700;">
+                    <i class="fas fa-calendar-alt me-3"></i>My Time Plans
+                </h2>
+                <p class="text-muted mb-0 fs-5">
+                    <i class="fas fa-user me-2"></i>Welcome back, @ViewBag.Employee.Name
+                </p>
+            </div>
+            <a asp-action="CreateTimePlan" class="btn shadow-sm" style="background: linear-gradient(45deg, #667eea, #764ba2); border: none; border-radius: 15px; color: white; padding: 15px 25px; font-weight: 600; font-size: 1.1rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                <i class="fas fa-plus me-2"></i>Create New Time Plan
+            </a>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Time Plans List -->
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var timeplan in Model)
+            {
+                var totalTasks = timeplan.Items.Count;
+                var completedTasks = timeplan.Items.Count(i => i.Status == "Done");
+                var completionPercentage = totalTasks > 0 ? (completedTasks * 100) / totalTasks : 0;
+
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm" style="border-radius: 20px; border: 1px solid rgba(102, 126, 234, 0.1); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 15px 35px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(0,0,0,0.1)'">
+                        <div class="card-header border-0" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 20px 20px 0 0; padding: 20px;">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-tasks" style="font-size: 1.5rem; background: linear-gradient(45deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                </div>
+                                <h5 class="card-title mb-0 fw-bold" style="color: #2c3e50;">@timeplan.Title</h5>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-muted fw-semibold">
+                                    <i class="fas fa-chart-line me-1"></i>Progress
+                                </span>
+                                <span class="fw-bold fs-5" style="color: @(completionPercentage == 100 ? "#28a745" : completionPercentage >= 50 ? "#ffc107" : "#667eea");">@completionPercentage%</span>
+                            </div>
+                            <div class="progress mb-4" style="height: 12px; border-radius: 10px; background: rgba(102, 126, 234, 0.1);">
+                                <div class="progress-bar" role="progressbar" style="width: @completionPercentage%; border-radius: 10px; background: linear-gradient(45deg, @(completionPercentage == 100 ? "#28a745, #20c997" : completionPercentage >= 50 ? "#ffc107, #fd7e14" : "#667eea, #764ba2"));"></div>
+                            </div>
+                            <div class="text-center mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-check-circle me-1"></i>@completedTasks of @totalTasks tasks completed
+                                </small>
+                            </div>
+                            <a asp-action="TimePlanDetails" asp-route-id="@timeplan.Id" class="btn w-100" style="background: linear-gradient(45deg, #667eea, #764ba2); border: none; border-radius: 12px; color: white; padding: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.35)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.2)'">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            <nav aria-label="Time plans pagination" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="MyTimePlans" asp-route-page="@i" style="border-radius: 10px; margin: 0 2px; border: 2px solid rgba(102, 126, 234, 0.2); color: #667eea; font-weight: 500; transition: all 0.3s ease; @(i == ViewBag.CurrentPage ? "background: linear-gradient(45deg, #667eea, #764ba2); color: white; border-color: #667eea;" : "")" onmouseover="@(i != ViewBag.CurrentPage ? "this.style.background='rgba(102, 126, 234, 0.1)'" : "")" onmouseout="@(i != ViewBag.CurrentPage ? "this.style.background='transparent'" : "")">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="section text-center py-5" style="border-radius: 20px; margin-top: 40px;">
+            <div class="mb-4">
+                <i class="fas fa-calendar-alt" style="font-size: 5rem; background: linear-gradient(45deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; opacity: 0.7;"></i>
+            </div>
+            <h4 class="mb-3" style="color: #2c3e50; font-weight: 600;">No Time Plans Yet</h4>
+            <p class="text-muted mb-4 lead">Ready to boost your productivity? Create your first time plan and start organizing your tasks efficiently.</p>
+            <a asp-action="CreateTimePlan" class="btn btn-lg shadow-sm" style="background: linear-gradient(45deg, #667eea, #764ba2); border: none; border-radius: 15px; color: white; padding: 15px 30px; font-weight: 600; font-size: 1.2rem; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 30px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.3)'">
+                <i class="fas fa-plus me-2"></i>Create Your First Time Plan
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-hide success alerts after 5 seconds
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert-success');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+}

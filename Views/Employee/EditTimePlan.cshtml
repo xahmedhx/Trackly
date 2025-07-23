@@ -1,0 +1,543 @@
+@model Trackly.Models.TimePlanViewModel
+@{
+    ViewData["Title"] = "Edit Time Plan";
+    // Null safety checks
+    if (Model.Items == null)
+    {
+        Model.Items = new List<Trackly.Models.TimePlanItemViewModel>();
+    }
+}
+
+<div class="container mt-4">
+    <!-- Navigation Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3>Edit Time Plan</h3>
+            @if (ViewBag.EmployeeName != null)
+            {
+                <p class="text-muted mb-0">For: @ViewBag.EmployeeName</p>
+            }
+        </div>
+        <div>
+            <a asp-action="MyTimePlans" class="btn btn-outline-primary me-2">
+                <i class="fas fa-list"></i> My Time Plans
+            </a>
+            @if (ViewBag.PreviousTimePlan != null)
+            {
+                <a asp-action="EditTimePlan" asp-route-id="@ViewBag.PreviousTimePlan.Id" 
+                   class="btn btn-outline-info me-1" title="Previous Plan: @ViewBag.PreviousTimePlan.Title">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            }
+            @if (ViewBag.NextTimePlan != null)
+            {
+                <a asp-action="EditTimePlan" asp-route-id="@ViewBag.NextTimePlan.Id" 
+                   class="btn btn-outline-info" title="Next Plan: @ViewBag.NextTimePlan.Title">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <h6>Please correct the following errors:</h6>
+            <ul class="mb-0">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-action="EditTimePlan" asp-controller="Employee" method="post">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="EmployeeId" />
+
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <label asp-for="Title" class="form-label">Time Plan Title</label>
+                <input asp-for="Title" class="form-control" placeholder="Enter a descriptive title for your time plan" required />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Total Tasks</label>
+                <input type="text" id="task-count" class="form-control" readonly value="@(Model.Items?.Count ?? 0)" />
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit"></i> Edit Tasks
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="25%">Task Name</th>
+                                <th width="15%">Start Date</th>
+                                <th width="15%">End Date</th>
+                                <th width="10%">Duration</th>
+                                <th width="15%">Status</th>
+                                <th width="10%">Progress</th>
+                                <th width="10%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-rows">
+                            @if (Model.Items?.Any() == true)
+                            {
+                                @for (int i = 0; i < Model.Items.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input name="Items[@i].Id" type="hidden" value="@(Model.Items[i].Id)" />
+                                            <input name="Items[@i].TaskName" class="form-control task-name" 
+                                                   value="@(Model.Items[i].TaskName ?? "")" placeholder="Enter task name" required />
+                                        </td>
+                                        <td>
+                                            <input type="date" name="Items[@i].StartDate" class="form-control start-date" 
+                                                   value="@Model.Items[i].StartDate.ToString("yyyy-MM-dd")" required />
+                                        </td>
+                                        <td>
+                                            <input type="date" name="Items[@i].EndDate" class="form-control end-date" 
+                                                   value="@Model.Items[i].EndDate.ToString("yyyy-MM-dd")" required />
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <input name="Items[@i].DurationInDays" class="form-control duration text-center" 
+                                                       value="@Model.Items[i].DurationInDays" readonly />
+                                                <span class="input-group-text">days</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select name="Items[@i].Status" class="form-select status-select">
+    @if (Model.Items[i].Status == "Pending")
+    {
+        <option value="Pending" selected>Pending</option>
+    }
+    else
+    {
+        <option value="Pending">Pending</option>
+    }
+
+    @if (Model.Items[i].Status == "In Progress")
+    {
+        <option value="In Progress" selected>In Progress</option>
+    }
+    else
+    {
+        <option value="In Progress">In Progress</option>
+    }
+
+    @if (Model.Items[i].Status == "Done")
+    {
+        <option value="Done" selected>Done</option>
+    }
+    else
+    {
+        <option value="Done">Done</option>
+    }
+</select>
+
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                @{
+                                                    var progressValue = (Model.Items[i].Status ?? "Pending") switch
+                                                    {
+                                                        "Done" => 100,
+                                                        "In Progress" => 50,
+                                                        _ => 0
+                                                    };
+                                                    var progressClass = (Model.Items[i].Status ?? "Pending") switch
+                                                    {
+                                                        "Done" => "bg-success",
+                                                        "In Progress" => "bg-warning",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <div class="progress-bar progress-bar-@i @progressClass" role="progressbar" 
+                                                     style="width: @progressValue%">@progressValue%</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Remove task">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <!-- Default empty row if no items exist -->
+                                <tr>
+                                    <td>
+                                        <input name="Items[0].Id" type="hidden" value="0" />
+                                        <input name="Items[0].TaskName" class="form-control task-name" placeholder="Enter task name" required />
+                                    </td>
+                                    <td><input type="date" name="Items[0].StartDate" class="form-control start-date" required /></td>
+                                    <td><input type="date" name="Items[0].EndDate" class="form-control end-date" required /></td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input name="Items[0].DurationInDays" class="form-control duration text-center" readonly />
+                                            <span class="input-group-text">days</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <select name="Items[0].Status" class="form-select status-select">
+                                            <option value="Pending" selected>Pending</option>
+                                            <option value="In Progress">In Progress</option>
+                                            <option value="Done">Done</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar progress-bar-0 bg-secondary" role="progressbar" style="width: 0%">0%</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Remove task">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-outline-secondary" id="add-row">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+                <div class="float-end">
+                    <a asp-action="TimePlanDetails" asp-route-id="@Model.Id" class="btn btn-secondary me-2">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Update Time Plan
+                    </button>
+                    <a asp-action="MyTimePlans" class="btn btn-secondary ms-2">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Delete Plan Section -->
+    <div class="card mt-4 border-danger">
+        <div class="card-header bg-danger text-white">
+            <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h6>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-danger mb-1">Delete this time plan</h6>
+                    <p class="text-muted mb-0">Once deleted, this action cannot be undone. All tasks will be permanently removed.</p>
+                </div>
+                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete(@(Model.Id), '@(Model.Title ?? "Untitled")')">>
+                    <i class="fas fa-trash"></i> Delete Plan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the time plan "<span id="deletePlanTitle"></span>"?</p>
+                <p class="text-danger"><strong>This action cannot be undone and will delete all associated tasks.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" asp-action="DeleteTimeplan" asp-controller="TimePlan">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-danger">Delete Time Plan</button>
+</form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let rowIdx = @(Model.Items?.Count ?? 1);
+
+        // Function to calculate duration between two dates
+        function calculateDuration(startDate, endDate) {
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays;
+            }
+            return 0;
+        }
+
+        // Function to update progress bar based on status
+        function updateProgressBar(row) {
+            const status = row.querySelector('.status-select').value;
+            const progressBar = row.querySelector('.progress-bar');
+            
+            let percentage = 0;
+            let progressClass = 'bg-secondary';
+            
+            switch(status) {
+                case 'Pending':
+                    percentage = 0;
+                    progressClass = 'bg-secondary';
+                    break;
+                case 'In Progress':
+                    percentage = 50;
+                    progressClass = 'bg-warning';
+                    break;
+                case 'Done':
+                    percentage = 100;
+                    progressClass = 'bg-success';
+                    break;
+            }
+            
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+            progressBar.className = progressBar.className.replace(/bg-\w+/, progressClass);
+        }
+
+        // Function to update task count
+        function updateTaskCount() {
+            const rowCount = document.querySelectorAll('#task-rows tr').length;
+            document.getElementById('task-count').value = rowCount;
+        }
+
+        // Function to update row indices after removal
+        function updateRowIndices() {
+            const rows = document.querySelectorAll('#task-rows tr');
+            rows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    const name = input.getAttribute('name');
+                    if (name) {
+                        const newName = name.replace(/Items\[\d+\]/, `Items[${index}]`);
+                        input.setAttribute('name', newName);
+                    }
+                });
+                
+                // Update progress bar class
+                const progressBar = row.querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.className = progressBar.className.replace(/progress-bar-\d+/, `progress-bar-${index}`);
+                }
+            });
+            rowIdx = rows.length;
+            updateTaskCount();
+        }
+
+        // Add new row
+        document.getElementById('add-row').addEventListener('click', function () {
+            const tbody = document.getElementById('task-rows');
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td>
+                    <input name="Items[${rowIdx}].Id" type="hidden" value="0" />
+                    <input name="Items[${rowIdx}].TaskName" class="form-control task-name" placeholder="Enter task name" required />
+                </td>
+                <td><input type="date" name="Items[${rowIdx}].StartDate" class="form-control start-date" required /></td>
+                <td><input type="date" name="Items[${rowIdx}].EndDate" class="form-control end-date" required /></td>
+                <td>
+                    <div class="input-group">
+                        <input name="Items[${rowIdx}].DurationInDays" class="form-control duration text-center" readonly />
+                        <span class="input-group-text">days</span>
+                    </div>
+                </td>
+                <td>
+                    <select name="Items[${rowIdx}].Status" class="form-select status-select">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </td>
+                <td>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-${rowIdx} bg-secondary" role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="Remove task">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+            rowIdx++;
+            updateTaskCount();
+        });
+
+        // Remove row
+        document.addEventListener('click', function (e) {
+            if (e.target && (e.target.classList.contains('remove-row') || e.target.closest('.remove-row'))) {
+                const rows = document.querySelectorAll('#task-rows tr');
+                if (rows.length > 1) { // Keep at least one row
+                    e.target.closest('tr').remove();
+                    updateRowIndices();
+                } else {
+                    alert('You must have at least one task in your time plan.');
+                }
+            }
+        });
+
+        // Calculate duration when dates change
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('start-date') || e.target.classList.contains('end-date')) {
+                const row = e.target.closest('tr');
+                const startDate = row.querySelector('.start-date').value;
+                const endDate = row.querySelector('.end-date').value;
+                const durationInput = row.querySelector('.duration');
+                
+                if (startDate && endDate) {
+                    const duration = calculateDuration(startDate, endDate);
+                    durationInput.value = duration;
+                }
+            }
+        });
+
+        // Update progress bar when status changes
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('status-select')) {
+                const row = e.target.closest('tr');
+                updateProgressBar(row);
+            }
+        });
+
+        // Validate end date is after start date
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('end-date')) {
+                const row = e.target.closest('tr');
+                const startDate = row.querySelector('.start-date').value;
+                const endDate = e.target.value;
+                
+                if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+                    alert('End date must be after start date');
+                    e.target.value = '';
+                    row.querySelector('.duration').value = '';
+                }
+            }
+        });
+
+        // Delete confirmation
+        function confirmDelete(timePlanId, title) {
+    document.getElementById('deletePlanTitle').textContent = title;
+    document.getElementById('deleteForm').action = '/Employee/DeleteTimePlan/' + timePlanId;
+
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+
+        // Initialize progress bars and task count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const rows = document.querySelectorAll('#task-rows tr');
+            rows.forEach(row => updateProgressBar(row));
+            updateTaskCount();
+
+            // Set default dates for new items
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'add-row') {
+                    setTimeout(() => {
+                        const newRow = document.querySelector('#task-rows tr:last-child');
+                        if (newRow) {
+                            const startDateInput = newRow.querySelector('.start-date');
+                            const endDateInput = newRow.querySelector('.end-date');
+                            if (startDateInput && !startDateInput.value) startDateInput.value = today;
+                            if (endDateInput && !endDateInput.value) endDateInput.value = tomorrow;
+                        }
+                    }, 100);
+                }
+            });
+        });
+
+        // Auto-hide success alerts after 5 seconds
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert-success');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+@section Styles {
+    <style>
+        .card-header.bg-warning {
+            border-bottom: 2px solid #f0ad4e;
+        }
+        
+        .border-danger {
+            border-color: #dc3545 !important;
+        }
+        
+        .table th {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .progress {
+            border-radius: 10px;
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        
+        .btn-group .btn {
+            border-radius: 0;
+        }
+        
+        .btn-group .btn:first-child {
+            border-radius: 0.375rem 0 0 0.375rem;
+        }
+        
+        .btn-group .btn:last-child {
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+        
+        .task-name:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+        }
+        
+        .status-select:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
+        }
+    </style>
+}

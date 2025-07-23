@@ -13,6 +13,7 @@
             <th>Task</th>
             <th>Start</th>
             <th>End</th>
+            <th>Duration (Days)</th>
             <th>Status</th>
         </tr>
     </thead>
@@ -23,6 +24,7 @@
                 <td>@item.TaskName</td>
                 <td>@item.StartDate.ToShortDateString()</td>
                 <td>@item.EndDate.ToShortDateString()</td>
+                <td>@item.DurationInDays</td>
                 <td>@item.Status</td>
             </tr>
         }

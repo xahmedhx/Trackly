@@ -168,3 +168,4 @@
 /Users/ahmed/Developer/Trackly/obj/Debug/net8.0/Trackly.pdb
 /Users/ahmed/Developer/Trackly/obj/Debug/net8.0/Trackly.genruntimeconfig.cache
 /Users/ahmed/Developer/Trackly/obj/Debug/net8.0/ref/Trackly.dll
+/Users/ahmed/Developer/Trackly/obj/Debug/net8.0/Trackly.sourcelink.json

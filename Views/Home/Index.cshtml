@@ -85,7 +85,7 @@
                         <label for="employeeId" class="form-label">Select Employee</label>
                         <select name="employeeId" id="employeeId" class="form-control" required>
                             <option value="">-- Select Employee --</option>
-                            @foreach (var emp in ViewBag.Employee> as List<Trackly.Models.Employee>)
+                            @foreach (var emp in ViewBag.Employee as List<Trackly.Models.Employee>)
                             {
                                 <option value="@emp.Id">@emp.Username</option>
                             }

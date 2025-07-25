@@ -19,6 +19,8 @@ builder.Services.AddAuthentication("MyCookieAuth")
         options.Cookie.Name = "MyAppAuthCookie";
     });
 
+    
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

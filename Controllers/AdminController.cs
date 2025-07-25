@@ -31,7 +31,7 @@ namespace Trackly.Controllers
                 .Where(t => t.Employee.DepartmentId == departmentId && t.EmployeeId == employeeId)
                 .ToListAsync();
 
-            return Ok(plans);
+            return View("EmployeeTimePlans",plans);
         }
 
         [Authorize(Roles = "Admin")]

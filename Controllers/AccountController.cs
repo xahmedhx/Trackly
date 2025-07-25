@@ -83,7 +83,8 @@ public class AccountController : Controller
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, admin.Username),
-                new Claim(ClaimTypes.Role, "Admin")
+                new Claim(ClaimTypes.Role, "Admin"),
+                new Claim("DepartmentId", admin.DepartmentId.ToString())
             };
             await SignInUser(claims);
             return RedirectToLocal(returnUrl, "Index", "Home");
@@ -204,8 +205,9 @@ public class AccountController : Controller
                 if (admin != null)
                 {
                     ViewBag.DepartmentEmployees = await _context.Employees
-                        .Where(e => e.DepartmentId == admin.DepartmentId)
-                        .ToListAsync();
+    .Where(e => e.DepartmentId == admin.DepartmentId)
+    .Select(e => new { e.Id, e.Name, e.Username })
+    .ToListAsync();
                 }
             }
         }

@@ -500,122 +500,22 @@ namespace Trackly.Controllers
             }
         }
         [HttpPost("Employee/DeleteTimePlan/{id}")]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> DeleteTimePlan(int id)
-{
-    var timeplan = await _context.Timeplans
-        .Include(t => t.Items)
-        .FirstOrDefaultAsync(t => t.Id == id);
-
-    if (timeplan == null)
-        return NotFound();
-
-    _context.Timeplans.Remove(timeplan);
-    await _context.SaveChangesAsync();
-
-    TempData["SuccessMessage"] = "Time plan deleted successfully.";
-    return RedirectToAction("MyTimePlans");
-}
-
-[HttpGet("Employee/FixAllDurations")]
-public async Task<IActionResult> FixAllDurations()
-{
-    try
-    {
-        var allItems = await _context.TimePlanItems.ToListAsync();
-        int updatedCount = 0;
-        
-        foreach (var item in allItems)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteTimePlan(int id)
         {
-            var newDuration = 1; // Default to 1 day
-            if (item.EndDate >= item.StartDate)
-            {
-                newDuration = (int)(item.EndDate - item.StartDate).TotalDays + 1;
-            }
-            
-            if (item.DurationInDays != newDuration)
-            {
-                item.DurationInDays = newDuration;
-                updatedCount++;
-            }
-        }
-        
-        if (updatedCount > 0)
-        {
+            var timeplan = await _context.Timeplans
+                .Include(t => t.Items)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (timeplan == null)
+                return NotFound();
+
+            _context.Timeplans.Remove(timeplan);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Time plan deleted successfully.";
+            return RedirectToAction("MyTimePlans");
         }
-        
-        return Json(new { 
-            success = true, 
-            message = $"Updated {updatedCount} timeplan items with correct duration values.",
-            totalItems = allItems.Count,
-            updatedItems = updatedCount
-        });
     }
-    catch (Exception ex)
-    {
-        return Json(new { 
-            success = false, 
-            message = $"Error updating durations: {ex.Message}" 
-        });
-    }
-}
 
-[HttpPost("Employee/SyncTimePlanDurations/{id}")]
-public async Task<IActionResult> SyncTimePlanDurations(int id)
-{
-    try
-    {
-        var employeeId = await GetCurrentEmployeeId();
-        if (employeeId == null)
-        {
-            return Json(new { success = false, message = "User not authenticated" });
-        }
-
-        var timeplan = await _context.Timeplans
-            .Include(t => t.Items)
-            .FirstOrDefaultAsync(t => t.Id == id && t.EmployeeId == employeeId);
-
-        if (timeplan == null)
-        {
-            return Json(new { success = false, message = "Time plan not found or access denied" });
-        }
-
-        int updatedCount = 0;
-        foreach (var item in timeplan.Items)
-        {
-            var oldDuration = item.DurationInDays;
-            var newDuration = 1; // Default to 1 day
-            
-            if (item.EndDate >= item.StartDate)
-            {
-                newDuration = (int)(item.EndDate - item.StartDate).TotalDays + 1;
-            }
-
-            if (oldDuration != newDuration)
-            {
-                item.DurationInDays = newDuration;
-                updatedCount++;
-            }
-        }
-
-        if (updatedCount > 0)
-        {
-            await _context.SaveChangesAsync();
-        }
-
-        return Json(new { 
-            success = true, 
-            message = $"Synced {updatedCount} task durations for time plan '{timeplan.Title}'",
-            updatedCount = updatedCount,
-            totalTasks = timeplan.Items.Count
-        });
-    }
-    catch (Exception ex)
-    {
-        return Json(new { success = false, message = $"Error syncing durations: {ex.Message}" });
-    }
-}
-
-    }
 }

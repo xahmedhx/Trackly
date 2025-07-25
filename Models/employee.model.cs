@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Trackly.Models;
 
 public class Employee
@@ -8,7 +10,10 @@ public class Employee
     public string Username { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public int DepartmentId { get; set; }
+
+    [JsonIgnore]
     public Department Department { get; set; } = new Department();
+    [JsonIgnore]
     public List<Timeplan> Timeplans { get; set; } = new List<Timeplan>();
 }
 public class Timeplan
@@ -17,6 +22,8 @@ public class Timeplan
         public string Title { get; set; } = string.Empty;
         public int EmployeeId { get; set; }
         public DateTime CreatedDate { get; set; }
+
+        [JsonIgnore]
         public Employee? Employee { get; set; }
         public List<TimePlanItem> Items { get; set; } = new List<TimePlanItem>();
     }

@@ -54,11 +54,6 @@
                             </h4>
                             <p class="text-muted mb-0">Welcome back, @User.Identity.Name</p>
                         </div>
-                        <form asp-controller="Account" asp-action="Logout" method="post">
-                            <button type="submit" class="btn" style="background: linear-gradient(45deg, #dc3545, #c82333); color: white; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 500; transition: all 0.3s ease;">
-                                <i class="fas fa-sign-out-alt me-1"></i>Logout
-                            </button>
-                        </form>
                     </div>
 
                     @if (isMainAdmin)
@@ -157,7 +152,7 @@
                                         <select name="employeeId" id="employeeId" class="form-control" style="border-radius: 10px; padding: 12px; border: 2px solid rgba(23, 162, 184, 0.2);">
                                             @foreach (var emp in ViewBag.DepartmentEmployees)
                                             {
-                                                <option value="@emp.Id">@emp.Name</option>
+                                                <option value="@emp.Id">@emp.Username</option>
                                             }
                                         </select>
                                     </div>

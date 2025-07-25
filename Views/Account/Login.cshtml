@@ -117,7 +117,7 @@
                                                 <input name="Username" placeholder="Employee Username" class="form-control" style="border-radius: 10px; padding: 12px; border: 2px solid rgba(40, 167, 69, 0.2);" />
                                             </div>
                                             <div class="form-group mb-3">
-                                                <select name="DepartmentId" class="form-control" style="border-radius: 10px; padding: 12px; border: 2px solid rgba(40, 167, 69, 0.2);">
+                                                <select name="DepartmentId" class="form-select" style="border-radius: 10px; width:100%; padding: 12px; border: 2px solid rgba(40, 167, 69, 0.2);">
                                                     <option selected>Select Department</option>
                                                     @foreach (var dept in ViewBag.Departments)
                                                     {
@@ -149,10 +149,12 @@
                                         <label for="employeeId" class="form-label fw-semibold" style="color: #2c3e50;">
                                             <i class="fas fa-user me-2"></i>Select Employee
                                         </label>
-                                        <select name="employeeId" id="employeeId" class="form-control" style="border-radius: 10px; padding: 12px; border: 2px solid rgba(23, 162, 184, 0.2);">
+                                        <select name="employeeId" id="employeeId" class="form-select" style="border-radius: 10px; padding: 12px; border: 2px solid rgba(23, 162, 184, 0.2);">
+                                            <option selected>Select Employee</option>
                                             @foreach (var emp in ViewBag.DepartmentEmployees)
                                             {
-                                                <option value="@emp.Id">@emp.Username</option>
+                                               <option value="@emp.Id" title="@emp.Username">@emp.Username</option>
+
                                             }
                                         </select>
                                     </div>
